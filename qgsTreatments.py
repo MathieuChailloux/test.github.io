@@ -60,13 +60,13 @@ def initGdalCommands():
         gdal_warp_cmd = 'gdalwarp'
         gdal_merge_cmd = 'gdal_merge.py'
         if not os.path.isfile(gdal_calc_cmd):
-            gdal_calc_cmd = findFileFromDir(gdal_path,'gdal_calc.py')
+            gdal_calc_cmd = utils.findFileFromDir(gdal_path,'gdal_calc.py')
         if not os.path.isfile(gdal_merge_cmd):
-            gdal_merge_cmd = findFileFromDir(gdal_path,'gdal_merge.py')
+            gdal_merge_cmd = utils.findFileFromDir(gdal_path,'gdal_merge.py')
         if not os.path.isfile(gdal_rasterize_cmd):
-            gdal_rasterize_cmd = findFileFromDir(gdal_path,'gdal_rasterize')
+            gdal_rasterize_cmd = utils.findFileFromDir(gdal_path,'gdal_rasterize')
         if not os.path.isfile(gdal_warp_cmd):
-            gdal_warp_cmd = findFileFromDir(gdal_path,'gdalwarp')
+            gdal_warp_cmd = utils.findFileFromDir(gdal_path,'gdalwarp')
     else:
         utils.internal_error("Unexpected system : " + str(utils.platform_sys))
     if os.path.isfile(gdal_calc_cmd):
