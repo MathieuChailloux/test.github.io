@@ -146,7 +146,7 @@ def fromTmpPath(tmp_path):
     bn, extension = os.path.splitext(path)
     return (bn[:-4] + extension)
     
-def findFileFormDir(dir,fname):
+def findFileFromDir(dir,fname):
     if dir.endsWith('/'):
         regexp = dir + "**/" + fname
     else:
