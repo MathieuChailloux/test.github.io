@@ -38,33 +38,53 @@ nodata_val = '-9999'
 
 gdal_calc_cmd = None
 gdal_merge_cmd = None
+gdal_rasterize_cmd = None
+gdal_warp_cmd = None
 
 def initGdalCommands():
     global gdal_calc_cmd, gdal_merge_cmd
     if utils.platform_sys == 'Windows':
         gdal_calc_cmd = 'gdal_calc.bat'
         gdal_merge_cmd = 'gdal_merge.bat'
+        gdal_rasterize_cmd = 'gdal_rasterize'
+        gdal_warp_cmd = 'gdalwarp'
     elif utils.platform_sys == 'Linux':
         gdal_calc_cmd = 'gdal_calc.py'
         gdal_merge_cmd = 'gdal_merge.py'
+        gdal_rasterize_cmd = 'gdal_rasterize'
+        gdal_warp_cmd = 'gdalwarp'
     elif utils.platform_sys == 'Darwin':
         gdal_path = '/Library/Frameworks/GDAL.framework'
         gdal_calc_cmd = 'gdal_calc.py'
+        gdal_rasterize_cmd = 'gdalrasterize'
+        gdal_warp_cmd = 'gdalwarp'
+        gdal_merge_cmd = 'gdal_merge.py'
         if not os.path.isfile(gdal_calc_cmd):
             gdal_calc_cmd = findFileFromDir(gdal_path,'gdal_calc.py')
-        gdal_merge_cmd = 'gdal_merge.py'
         if not os.path.isfile(gdal_merge_cmd):
             gdal_merge_cmd = findFileFromDir(gdal_path,'gdal_merge.py')
+        if not os.path.isfile(gdal_rasterize_cmd):
+            gdal_rasterize_cmd = findFileFromDir(gdal_path,'gdal_rasterize')
+        if not os.path.isfile(gdal_warp_cmd):
+            gdal_warp_cmd = findFileFromDir(gdal_path,'gdalwarp')
     else:
         utils.internal_error("Unexpected system : " + str(utils.platform_sys))
     if os.path.isfile(gdal_calc_cmd):
         utils.debug("gdal_calc command set to " + str(gdal_calc_cmd))
     else:
-        utils.user_error("Could not find gdal_calc.py script")
+        utils.user_error("Could not find gdal_calc command")
     if os.path.isfile(gdal_merge_cmd):
         utils.debug("gdal_merge command set to " + str(gdal_merge_cmd))
     else:
-        utils.user_error("Could not find gdal_merge script")
+        utils.user_error("Could not find gdal_merge command")
+    if os.path.isfile(gdal_rasterize_cmd):
+        utils.debug("gdal_rasterize command set to " + str(gdal_rasterize_cmd))
+    else:
+        utils.user_error("Could not find gdal_rasterize command")
+    if os.path.isfile(gdal_warp_cmd):
+        utils.debug("gdalwarp command set to " + str(gdal_warp_cmd))
+    else:
+        utils.user_error("Could not find gdalwarp command")
         
 
 def applyProcessingAlg(provider,alg_name,parameters):
@@ -134,7 +154,7 @@ def applyRasterization(in_path,field,out_path,resolution=None,
     #height = int((y_max - y_min) / float(resolution))
     if resolution == 0.0:
         utils.user_error("Empty resolution")
-    parameters = ['gdal_rasterize',
+    parameters = [gdal_rasterize_cmd,
                   '-at',
                   '-te',str(x_min),str(y_min),str(x_max),str(y_max),
                   #'-ts', str(width), str(height),
@@ -213,7 +233,7 @@ def applyWarpGdal(in_path,out_path,resampling_mode,
     #height = int((y_max - y_min) / float(resolution))
     in_crs = qgsUtils.getLayerCrsStr(in_layer)
     extent_crs = qgsUtils.getLayerCrsStr(extent_layer)
-    cmd_args = ['gdalwarp',
+    cmd_args = [gdal_warp_cmd,
                 '-s_srs',in_crs,
                 '-t_srs',crs.authid(),
                 '-te',str(x_min),str(y_min),str(x_max),str(y_max),
