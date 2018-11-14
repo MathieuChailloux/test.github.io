@@ -35,7 +35,7 @@ file_dir = os.path.dirname(__file__)
 if file_dir not in sys.path:
     sys.path.append(file_dir)
 
-# Log utilities
+# LOG UTILITIES
 
 def printLine(msg):
     print(msg + "\n")
@@ -101,10 +101,7 @@ class Section:
         info(self.title + " finished in " + str(diff_time) + " seconds")
     
     
-# File utils
-    
-#def normPath(fname):
-#    return fname.replace('\\','/')
+# FILE UTILITIES
 
 def normPath(fname):
     p = pathlib.Path(fname)
@@ -139,7 +136,7 @@ def writeFile(fname,str):
     with open(fname,"w",encoding="utf-8") as f:
         f.write(str)
     
-# Path utils
+# PATH UTILITIES
 
 def mkTmpPath(path,suffix="_tmp"):
     bn,extension = os.path.splitext(path)
@@ -148,8 +145,23 @@ def mkTmpPath(path,suffix="_tmp"):
 def fromTmpPath(tmp_path):
     bn, extension = os.path.splitext(path)
     return (bn[:-4] + extension)
+    
+def findFileFormDir(dir,fname):
+    if dir.endsWith('/'):
+        regexp = dir + "**/" + fname
+    else:
+        regexp = dir + "/**/" + fname
+    glob_res = glob.glob(regexp,recursive=True)
+    nb_res = len(glob_res)
+    if nb_res == 0:
+        utils.user_error("No file '" + fname + "' found in directory '" + dir + "'")
+    else:
+        res = glob_res[0]
+        utils.debug("Found " + str(nb_res) + " files named '" + fname + "' in directory '" + dir + "'")
+        return res
+    
 
-# Type utils
+# TYPE UTILITIES
     
 def is_number(s):
     try:
@@ -197,6 +209,7 @@ def checkDescr(item,prefix=None):
 # Subprocess utils
         
 def executeCmd(cmd_args):
+    debug("command = " + str(cmd_args))
     p = subprocess.Popen(cmd_args,
                          stderr=subprocess.PIPE,
                          stdout=subprocess.PIPE)

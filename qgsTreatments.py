@@ -35,32 +35,70 @@ import utils
 import qgsUtils
 
 nodata_val = '-9999'
-if utils.platform_sys == 'Windows':
-    gdal_calc_cmd = 'gdal_calc.bat'
-    gdal_merge_cmd = 'gdal_merge.bat'
-elif utils.platform_sys == 'Linux':
-    gdal_calc_cmd = 'gdal_calc.py'
-    gdal_merge_cmd = 'gdal_merge.py'
-else:
-    utils.internal_error("Unexpected system : " + str(utils.platform_sys))
 
-def applyProcessingAlg(parameters,alg_name):
+gdal_calc_cmd = None
+gdal_merge_cmd = None
+
+def initGdalCommands():
+    global gdal_calc_cmd, gdal_merge_cmd
+    if utils.platform_sys == 'Windows':
+        gdal_calc_cmd = 'gdal_calc.bat'
+        gdal_merge_cmd = 'gdal_merge.bat'
+    elif utils.platform_sys == 'Linux':
+        gdal_calc_cmd = 'gdal_calc.py'
+        gdal_merge_cmd = 'gdal_merge.py'
+    elif utils.platform_sys == 'Darwin':
+        gdal_path = '/Library/Frameworks/GDAL.framework'
+        gdal_calc_cmd = 'gdal_calc.py'
+        if not os.path.isfile(gdal_calc_cmd):
+            gdal_calc_cmd = findFileFromDir(gdal_path,'gdal_calc.py')
+        gdal_merge_cmd = 'gdal_merge.py'
+        if not os.path.isfile(gdal_merge_cmd):
+            gdal_merge_cmd = findFileFromDir(gdal_path,'gdal_merge.py')
+    else:
+        utils.internal_error("Unexpected system : " + str(utils.platform_sys))
+    if os.path.isfile(gdal_calc_cmd):
+        utils.debug("gdal_calc command set to " + str(gdal_calc_cmd))
+    else:
+        utils.user_error("Could not find gdal_calc.py script")
+    if os.path.isfile(gdal_merge_cmd):
+        utils.debug("gdal_merge command set to " + str(gdal_merge_cmd))
+    else:
+        utils.user_error("Could not find gdal_merge script")
+        
+
+def applyProcessingAlg(provider,alg_name,parameters):
     feedback = QgsProcessingFeedback()
-    if 'GRASS_REGION_CELLSIZE_PARAMETER' not in parameters:
-        parameters['GRASS_REGION_CELLSIZE_PARAMETER'] = 25
     utils.debug("parameters : " + str(parameters))
     try:
-        res = processing.run("grass7:" + alg_name,parameters,feedback=feedback)
-        utils.debug(str(feedback))
+        complete_name = provider + ":" + alg_name
+        utils.debug("Calling processing algorithm '" + complete_name)
+        res = processing.run(complete_name,parameters,feedback=feedback)
         utils.debug(str(res["output"]))
         utils.debug ("call to " + alg_name + " successful")
-        #res_layer = qgsUtils.loadRasterLayer(out_path)
-        #QgsProject.instance().addMapLayer(res_layer)
     except Exception as e:
         utils.warn ("Failed to call " + alg_name + " : " + str(e))
         raise e
     finally:  
         utils.debug("End run " + alg_name)
+
+def applyGrassAlg(parameters,alg_name):
+    applyProcessingAlg("grass7",alg_name,parameters)
+# def applyGrassAlg(parameters,alg_name):
+    # feedback = QgsProcessingFeedback()
+    # if 'GRASS_REGION_CELLSIZE_PARAMETER' not in parameters:
+        # parameters['GRASS_REGION_CELLSIZE_PARAMETER'] = 25
+    # utils.debug("parameters : " + str(parameters))
+    # try:
+        # res = processing.run("grass7:" + alg_name,parameters,feedback=feedback)
+        # utils.debug(str(feedback))
+        # utils.debug(str(res["output"]))
+        # utils.debug ("call to " + alg_name + " successful")
+    # except Exception as e:
+        # utils.warn ("Failed to call " + alg_name + " : " + str(e))
+        # raise e
+    # finally:  
+        # utils.debug("End run " + alg_name)
         
 
 def applySelection(in_layer,expr,out_layer):
@@ -220,10 +258,12 @@ def applyReclassProcessing(in_path,out_path,rules_file,title):
 # Calculation is made on a single file and a signled band renamed 'A'.
 # Output format is Integer32.
 def applyGdalCalc(in_path,out_path,expr,load_flag=False,more_args=[]):
+    global gdal_calc_cmd
     utils.debug("qgsTreatments.applyGdalCalc(" + str(expr) + ")")
     if os.path.isfile(out_path):
         qgsUtils.removeRaster(out_path)
     #cmd_args = ['gdal_calc.bat',
+    utils.debug("gdal_calc commnad = " + str(gdal_calc_cmd))
     cmd_args = [gdal_calc_cmd,
                 '-A', in_path,
                 '--type=Int32',
@@ -359,14 +399,14 @@ def applyRNull(in_path,new_val,out_path):
     parameters = { 'map' : in_path,
                    'null' : str(new_val),
                    'output' : out_path }
-    applyProcessingAlg(parameters,"r.null")
+    applyGrassAlg(parameters,"r.null")
     
 def applyRSetNull(in_path,new_val,out_path):
     utils.debug("applyRNull")
     parameters = { 'map' : in_path,
                    'setnull' : str(new_val),
                    'output' : out_path }
-    applyProcessingAlg(parameters,"r.null")
+    applyGrassAlg(parameters,"r.null")
         
 def applyRBuffer(in_path,buffer_vals,out_path):
     utils.debug ("applyRBuffer")
@@ -388,7 +428,7 @@ def applyRBuffer(in_path,buffer_vals,out_path):
                     '-z' : False,
                     '--type' : 'Int32',
                     '--overwrite' : False}
-    applyProcessingAlg(parameters,"r.buffer.lowmem")
+    applyGrassAlg(parameters,"r.buffer.lowmem")
     # feedback = QgsProcessingFeedback()
     # utils.debug("parameters : " + str(parameters))
     # try:

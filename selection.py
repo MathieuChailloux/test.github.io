@@ -30,7 +30,7 @@ from .qgsUtils import *
 import params
 import classes
 import groups
-from .qgsTreatments import *
+import qgsTreatments
 import progress
 from osgeo import gdal
 import numpy as np
@@ -76,6 +76,7 @@ class SelectionItem(DictItem):
         pass
         
     def applyItem(self):
+        utils.debug("gdal_calc command = " + str(qgsTreatments.gdal_calc_cmd))
         if self.is_vector:
             self.applyVectorItem()
             #self.applyRasterItem()
@@ -111,12 +112,12 @@ class SelectionItem(DictItem):
             unique_vals.remove(in_nodata_val)
             utils.debug("Unique values : " + str(unique_vals))
             reclass_dict = group_item.getReclassDict()
-            applyReclassGdalFromDict(in_layer_path,out_tmp_path,reclass_dict)
-            applyWarpGdal(out_tmp_path,out_path,resampling_mode,crs,
+            qgsTreatments.applyReclassGdalFromDict(in_layer_path,out_tmp_path,reclass_dict)
+            qgsTreatments.applyWarpGdal(out_tmp_path,out_path,resampling_mode,crs,
                           resolution,extent_path,
                           load_flag=True,to_byte=True)
         else:
-            applyWarpGdal(in_layer_path,out_path,resampling_mode,crs,
+            qgsTreatments.applyWarpGdal(in_layer_path,out_path,resampling_mode,crs,
                           resolution,extent_path,
                           load_flag=True,to_byte=False)
         

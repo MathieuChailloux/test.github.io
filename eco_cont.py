@@ -29,6 +29,7 @@ from PyQt5.QtWidgets import QAction
 from .resources import *
 # Import the code for the dialog
 from .eco_cont_dialog import EcologicalContinuityDialog
+import qgsTreatments
 import os.path
 import sys
 
@@ -222,6 +223,8 @@ class EcologicalContinuity:
         #self.dlg.initLog()
         self.dlg.show()
         print(str(self.dlg))
+        qgsTreatments.initGdalCommands()
+        utils.debug("gdal_calc command = " + str(qgsTreatments.gdal_calc_cmd))
         # Run the dialog event loop
         result = self.dlg.exec_()
         # See if OK was pressed

@@ -31,7 +31,8 @@ from .qgsUtils import *
 import progress
 import sous_trames
 from .abstract_model import *
-from .qgsTreatments import *
+#from .qgsTreatments import *
+import qgsTreatments
 
 import time
 
@@ -68,7 +69,7 @@ class CostItem(DictItem):
         startRaster = st_item.getStartLayerPath()
         params.checkInit()
         extent_layer_path = params.getExtentLayer()
-        applyRasterization(startLayer,"geom",startRaster,
+        qgsTreatments.applyRasterization(startLayer,"geom",startRaster,
                            resolution=params.getResolution(),
                            extent_path=extent_layer_path,load_flag=False,to_byte=False,
                            more_args=['-ot','Byte','-a_nodata','0'])
@@ -79,10 +80,10 @@ class CostItem(DictItem):
         outPath = params.getOrigPath(self.dict["out_layer"])
         if os.path.isfile(outPath):
             removeRaster(outPath)
-        applyRCost(startRaster,permRaster,cost,tmpPath)
-        applyFilterGdalFromMaxVal(tmpPath,outPath,cost)
+        qgsTreatments.applyRCost(startRaster,permRaster,cost,tmpPath)
+        qgsTreatments.applyFilterGdalFromMaxVal(tmpPath,outPath,cost)
         #removeRaster(tmpPath)
-        res_layer = qgsUtils.loadRasterLayer(outPath)
+        res_layer = loadRasterLayer(outPath)
         QgsProject.instance().addMapLayer(res_layer)
         utils.debug("End runCost")
             

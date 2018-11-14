@@ -31,7 +31,8 @@ from PyQt5.QtWidgets import QVBoxLayout
 
 from .utils import *
 from .qgsUtils import *
-from .qgsTreatments import *
+#from .qgsTreatments import *
+import qgsTreatments
 import progress
 import params
 import abstract_model
@@ -291,7 +292,7 @@ class PonderationItem(abstract_model.DictItem):
         layer2_norm = params.normalizeRaster(layer2)
         # if os.path.isfile(out_layer):
             # removeRaster(out_layer)
-        applyPonderationGdal(layer1,layer2_norm,out_layer,pos_values=False)
+        qgsTreatments.applyPonderationGdal(layer1,layer2_norm,out_layer,pos_values=False)
             
     def applyItemDirect(self,friction_path,pond_path,out_path):
         # friction_layer_path = params.getOrigPath(self.dict["friction"])
@@ -310,7 +311,7 @@ class PonderationItem(abstract_model.DictItem):
         ival_model = PondValueIvalModel.fromStr(ivals)
         ival_model.checkModel()
         gdalc_calc_expr = ival_model.toGdalCalcExpr()
-        applyGdalCalcAB_ANull(friction_path,pond_path,out_path,gdalc_calc_expr,load_flag=True)
+        qgsTreatments.applyGdalCalcAB_ANull(friction_path,pond_path,out_path,gdalc_calc_expr,load_flag=True)
         #self.applyPonderation(friction_path,tmp_path,out_path)
         
         
@@ -327,23 +328,23 @@ class PonderationItem(abstract_model.DictItem):
         ival_model = PondBufferIvalModel.fromStr(ivals)
         ival_model.checkModel()
         buffer_distances = ival_model.toDistances()
-        applyRBuffer(pond_path,buffer_distances,pond_buf_path)
+        qgsTreatments.applyRBuffer(pond_path,buffer_distances,pond_buf_path)
         gdal_calc_expr = ival_model.toGdalCalcExpr()
         pond_buf_reclassed = mkTmpPath(pond_buf_path,suffix="_reclassed")
-        applyGdalCalc(pond_buf_path,pond_buf_reclassed,gdal_calc_expr,
+        qgsTreatments.applyGdalCalc(pond_buf_path,pond_buf_reclassed,gdal_calc_expr,
                       load_flag=False,more_args=['--type=Float32'])
         pond_buf_norm = mkTmpPath(pond_buf_path,suffix="_norm")
         crs = params.params.crs
         resolution = params.getResolution()
         extent_path = params.getExtentLayer()
-        applyWarpGdal(pond_buf_reclassed,pond_buf_norm,'near',
+        qgsTreatments.applyWarpGdal(pond_buf_reclassed,pond_buf_norm,'near',
                       crs,resolution,extent_path,
                       load_flag=False,to_byte=False)
                       #more_args=['-ot','Float32'])
         #pond_buf_norm_path = params.normalizeRaster(pond_buf_path)
         #applyGdalCalc(pond_norm_path,pond_buf_norm_path,gdalc_calc_expr)
         pond_buf_nonull = mkTmpPath(pond_buf_path,suffix="_nonull")
-        applyRNull(pond_buf_norm,1,pond_buf_nonull)
+        qgsTreatments.applyRNull(pond_buf_norm,1,pond_buf_nonull)
         self.applyPonderation(friction_path,pond_buf_nonull,out_path)
         removeRaster(pond_buf_path)
         removeRaster(pond_buf_reclassed)
