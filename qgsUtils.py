@@ -94,7 +94,7 @@ def loadVectorLayer(fname,loadProject=False):
         utils.user_error("Could not load vector layer '" + fname + "'")
     if not layer.isValid():
         utils.user_error("Invalid vector layer '" + fname + "'")
-    if extension == ".shp" and utils.platform_sys == "Linux":
+    if extension == ".shp" and (utils.platform_sys in ["Linux","Darwin"]):
         layer.dataProvider().setEncoding('Latin-1')
     else:
         layer.dataProvider().setEncoding('System')

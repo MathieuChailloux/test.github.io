@@ -42,7 +42,7 @@ gdal_rasterize_cmd = None
 gdal_warp_cmd = None
 
 def initGdalCommands():
-    global gdal_calc_cmd, gdal_merge_cmd
+    global gdal_calc_cmd, gdal_merge_cmd, gdal_rasterize_cmd, gdal_warp_cmd
     if utils.platform_sys == 'Windows':
         gdal_calc_cmd = 'gdal_calc.bat'
         gdal_merge_cmd = 'gdal_merge.bat'
@@ -171,6 +171,7 @@ def applyRasterization(in_path,field,out_path,resolution=None,
         parameters += ['-a',field]
     parameters += more_args
     parameters += [in_path,out_path]
+    utils.debug("rasteization cmd = " + str(parameters))
     p = subprocess.Popen(parameters,stderr=subprocess.PIPE)
     out,err = p.communicate()
     utils.debug(str(p.args))
@@ -489,18 +490,19 @@ def applyRCost(start_path,cost_path,cost,out_path):
                     '-i' : False,
                     '-b' : False,
                     '--overwrite' : True}
-    feedback = QgsProcessingFeedback()
-    utils.debug("parameters : " + str(parameters))
-    try:
-        processing.run("grass7:r.cost",parameters,feedback=feedback)
-        utils.info ("call to r.cost successful")
+    applyGrassAlg(parameters,"r.cost")
+    #feedback = QgsProcessingFeedback()
+    #utils.debug("parameters : " + str(parameters))
+    #try:
+    #    processing.run("grass7:r.cost",parameters,feedback=feedback)
+    #    utils.info ("call to r.cost successful")
         #res_layer = qgsUtils.loadRasterLayer(out_path)
         #QgsProject.instance().addMapLayer(res_layer)
-    except Exception as e:
-        utils.info ("Failed to call r.cost : " + str(e))
-        raise e
-    finally:  
-        utils.debug("End runCost")
+    #except Exception as e:
+    #    utils.info ("Failed to call r.cost : " + str(e))
+    #    raise e
+    #finally:  
+    #    utils.debug("End runCost")
         
         
 def applyGdalMerge(files,out_path,load_flag=False):

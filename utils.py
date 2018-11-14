@@ -30,6 +30,7 @@ import subprocess
 import time
 import html
 import platform
+import glob
 
 file_dir = os.path.dirname(__file__)
 if file_dir not in sys.path:
@@ -147,17 +148,18 @@ def fromTmpPath(tmp_path):
     return (bn[:-4] + extension)
     
 def findFileFromDir(dir,fname):
-    if dir.endsWith('/'):
+    #if dir.endsWith('/'):
+    if False:
         regexp = dir + "**/" + fname
     else:
         regexp = dir + "/**/" + fname
     glob_res = glob.glob(regexp,recursive=True)
     nb_res = len(glob_res)
     if nb_res == 0:
-        utils.user_error("No file '" + fname + "' found in directory '" + dir + "'")
+        user_error("No file '" + fname + "' found in directory '" + dir + "'")
     else:
         res = glob_res[0]
-        utils.debug("Found " + str(nb_res) + " files named '" + fname + "' in directory '" + dir + "'")
+        debug("Found " + str(nb_res) + " files named '" + fname + "' in directory '" + dir + "'")
         return res
     
 
